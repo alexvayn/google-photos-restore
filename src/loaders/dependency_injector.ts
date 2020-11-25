@@ -10,15 +10,9 @@ export default ({ models }: { models: { name: string; model: any }[] }) => {
       Container.set(m.name, m.model);
     });
 
-    //const agendaInstance = agendaFactory({ mongoConnection });
-
-    //Container.set('agendaInstance', agendaInstance);
     Container.set('logger', LoggerInstance);
-    //Container.set('emailClient', mailgun({ apiKey: config.emails.apiKey, domain: config.emails.domain }));
-
     LoggerInstance.info('Injected everything into container');
 
-    //return { agenda: agendaInstance };
   } catch (e) {
     LoggerInstance.error('Error on dependency injector loader: %o', e);
     throw e;
