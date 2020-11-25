@@ -1,0 +1,20 @@
+{
+  "name": "google-photos-restore",
+  "version": "1.0.0",
+  "description": "This project restores my offline Google Photos library after exporting it using Takeout",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexvayn/google-photos-restore.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alexvayn/google-photos-restore/issues"
+  },
+  "homepage": "https://github.com/alexvayn/google-photos-restore#readme"
+}
