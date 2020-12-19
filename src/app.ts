@@ -1,4 +1,4 @@
-import 'reflect-metadata'; // For @Decorators
+import 'reflect-metadata'; // To enable @Decorators syntax
 import config from './config';
 import express from 'express';
 import Logger from './loaders/logger';
@@ -10,6 +10,7 @@ async function startServer() {
 	app.listen(config.port, () => {
 		Logger.info(`
 			Started server, listening on port ${config.port}
+			Healthcheck endpoint: ${config.healthCheckEndpoint}
 		`);
 	}).on('error', err => {
 		Logger.error(err);

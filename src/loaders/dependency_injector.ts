@@ -1,8 +1,6 @@
 import { Container } from 'typedi';
 import LoggerInstance from './logger';
-//import agendaFactory from './agenda';
 import config from '../config';
-import mailgun from 'mailgun-js';
 
 export default ({ models }: { models: { name: string; model: any }[] }) => {
   try {
