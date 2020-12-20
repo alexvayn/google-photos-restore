@@ -26,7 +26,7 @@ export default class MetadataService {
   }
 
 
-  public async listMetadata(filePath) {
+  public async fixDate(filePath) {
 
     // The original photo is taken at 2017:11:19 08:47:19
     const originalFile =  fs.readFileSync(config.testImagePath);
@@ -43,6 +43,8 @@ export default class MetadataService {
     const date = exifData['tags']['DateTimeOriginal'];
     this.logger.debug(`DateTimeOriginal: ${new Date(date*1000)}` );
     this.logger.debug(`DateTimeOriginal: ${date}` );
+
+    return exifData;
 
 
     

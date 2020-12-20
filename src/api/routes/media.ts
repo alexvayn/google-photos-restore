@@ -42,4 +42,23 @@ export default (app: Router) => {
     },//leaving in this trailing comma because I can
   );
 
+  route.get(
+    '/fix',
+    async (req: Request, res: Response, next) => {
+      const logger: Logger = Container.get('logger');
+      logger.debug('Fixing the media file...');
+
+
+      const metadataService = Container.get(MetadataService);
+      await metadataService.fixDate(null)
+        .then((metadataResponse) => {
+          logger.info('Response from Metadata Service: %o', metadataResponse)
+          res.send(metadataResponse);
+        }, (e) => {
+          logger.error('error while listing metadata: %o', e);
+          res.status(503).send();
+        });
+    },//leaving in this trailing comma because I can
+  );
+
 };
