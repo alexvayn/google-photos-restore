@@ -8,9 +8,8 @@ async function startServer() {
 	await require('./loaders').default({ expressApp: app });
 
 	app.listen(config.port, () => {
-		Logger.info(`
-			Started server, listening on port ${config.port}
-			Healthcheck endpoint: ${config.healthCheckEndpoint}
+		Logger.info('[ SUCCESSFULLY LOADED CONFIGS ] %o',config);
+		Logger.info(`Started server, listening on port ${config.port}
 		`);
 	}).on('error', err => {
 		Logger.error(err);

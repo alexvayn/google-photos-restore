@@ -20,31 +20,52 @@ export default class MetadataService {
 
   }
 
-  public async listMetadata(mediaFile, metadata) {
+  public async healthCheck(healthcheck){
+    healthcheck.metaDataServiceStatus = 'OK';
+    return 'this is fine -_-';
+  }
+
+
+  public async listMetadata(filePath) {
 
     // The original photo is taken at 2017:11:19 08:47:19
-    const fileName = config.testImagePath;
-    const originalFile =  fs.readFileSync(fileName);
+    const originalFile =  fs.readFileSync(config.testImagePath);
   //  const exifData = getExif(originalFile).Exif; //=> '2017:11:19 08:47:19'
 
-    const parser = ExifParserFactory.create(originalFile);
-    const exifData = ExifParserFactory.create(originalFile).parse();
+    this.logger.debug(`successfully read file ${config.testImagePath}`);
 
-    //const date = exifData['tags']['DateTimeOriginal'];
-    //console.log(`DateTimeOriginal: ${new Date(DateTimeOriginal*1000)}` );
-    const DateTimeOriginal = format(new Date(exifData.tags.DateTimeOriginal*1000), 'yyyy:mm:dd HH:MM:SS');
-    const CreateDate = format(new Date(exifData.tags.CreateDate*1000), 'yyyy:mm:dd HH:MM:SSXXX');
+    const parser = ExifParserFactory.create(originalFile);
+    //parser.enableSimpleValues(false);
+    const exifData = parser.parse();
+
+    console.log(exifData['tags']);
+
+    const date = exifData['tags']['DateTimeOriginal'];
+    this.logger.debug(`DateTimeOriginal: ${new Date(date*1000)}` );
+    this.logger.debug(`DateTimeOriginal: ${date}` );
+
+
+    
+    //const DateTimeOriginal = format(new Date(exifData.tags.DateTimeOriginal*1000), 'yyyy:mm:dd HH:MM:SS');
+    //const CreateDate = format(new Date(exifData.tags.CreateDate*1000), 'yyyy:mm:dd HH:MM:SSXXX');
 
     //console.log(DateTimeOriginal);
     //console.log(CreateDate);
-    const ep = new exiftool.ExiftoolProcess(exiftoolBin)
 
 
-    this.logger.debug(
-      `successfully read file: ${fileName}
-       listing metadata...
-    `);
-    console.log(exifData);
+
+
+
+    
+
+    //const newFile = modifyExif(await readFile(config.archiveRootDir+'/example.jpg'), data => {
+      // 36867: tag ID of `DateTimeOriginal` tag
+    //  data.Exif['36867'] = '2018:06:15 12:00:00'
+  //  });
+
+  //  getExif(newFile).Exif; //=> '2018:06:15 12:00:00'
+
+    //this.logger.debug(`listing metadata for ${config.archiveRootDir}`);
 
   }
 }

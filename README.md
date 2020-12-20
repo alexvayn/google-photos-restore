@@ -22,7 +22,7 @@ npm run start
 ```
 5. This will spit out a healthcheck endpoing. Hit it with curl or PostMan to make sure the app came up properly, e.g.
 ```
-curl http://localhost:3000/api/archive/healthcheck
+curl http://localhost:3000/api/archive/healthcheck  | python -m json.tool
 ```
 
 # Problem statement
