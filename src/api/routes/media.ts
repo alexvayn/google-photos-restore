@@ -15,21 +15,31 @@ export default (app: Router) => {
   });
 
   route.get(
-      '/healthcheck',
-      async (req: Request, res: Response, next) => {
-        const logger:Logger = Container.get('logger');
-        logger.debug('Runing basic health check...');
-        //logger.debug(JSON.stringify(config));
-        console.log(config);
-        try {
-          const metadataService = Container.get(MetadataService);
-          await metadataService.listMetadata('testArg1', 'testArg2');
-          return res.json({ result: "All health checks passed!" }).status(200);
-        } catch (e) {
-          logger.error('error: %o',  e );
-          return next(e);
-        }
-      },
-    );
+    '/healthcheck',
+    async (req: Request, res: Response, next) => {
+      const logger: Logger = Container.get('logger');
+      logger.debug('Runing basic health check...');
+
+
+      const healthcheck = {
+        uptime: Math.floor(process.uptime()) + ' seconds',
+        message: 'OK',
+        timestamp: new Date().toLocaleString()
+      };
+
+      const metadataService = Container.get(MetadataService);
+      await metadataService.healthCheck(healthcheck)
+        .then((metadataResponse) => {
+          logger.info('Response from Metadata Service: ' + metadataResponse)
+          logger.info('Sending back healthcheck response:');
+          logger.info('healthcheck: %o', healthcheck);
+          res.send(healthcheck);
+        }, (e) => {
+          logger.error('error while listing metadata: %o', e);
+          healthcheck.message = e;
+          res.status(503).send();
+        });
+    },//leaving in this trailing comma because I can
+  );
 
 };
