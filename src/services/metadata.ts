@@ -2,6 +2,7 @@ import { Service, Inject } from 'typedi';
 import config from '../config';
 import fs from 'fs';
 import {ExifParserFactory} from "ts-exif-parser";
+const { close, open, utimes } = require('fs');
 
 import exiftool from 'node-exiftool';
 import exiftoolBin from 'dist-exiftool';
@@ -43,6 +44,27 @@ export default class MetadataService {
     const date = exifData['tags']['DateTimeOriginal'];
     this.logger.debug(`DateTimeOriginal: ${new Date(date*1000)}` );
     this.logger.debug(`DateTimeOriginal: ${date}` );
+
+    /**
+     * 
+     * KNOWN BUG: doesn't take into account time zone (which has 'undefined' tag)
+     */
+
+    const touch = (path, callback) => {
+      utimes(path, date, date, err => {
+        if (err) {
+          return open(path, 'w', (err, fd) => {
+            err ? callback(err) : close(fd, callback);
+          });
+        }
+        callback();
+      });
+    };
+
+    touch(config.testImagePath, err => {
+      if (err) throw err;
+      console.log(`touch ${config.testImagePath}`);
+    });
 
     return exifData;
 

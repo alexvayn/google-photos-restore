@@ -24,7 +24,7 @@ Though this problem lends itself nicely to a low-stakes and rough MapReduce arch
 
 # Release notes & version log
 ## Version 0.0.1
-MVP: basic `/fix` endpoint 
+MVP: basic `/fix` endpoint (WIP)
 
 ## Version 0.0.0
 The very first and basic iteration of this program needs to start with the bare-minimum MVP. I should have the project structure in place and be able to stand up a RESTful endpoint that simple logs the status. It should be a clean project that I can run from anywhere by following some clear, short steps.
