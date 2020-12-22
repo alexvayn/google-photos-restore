@@ -16,8 +16,8 @@ Though this problem lends itself nicely to a low-stakes and rough MapReduce arch
 
 ## Endpoints
 
-1. `/api/healthcheck` to run a basic health check on the running app
-2. `/api/fix` to fix the date for a single file, based on the metadata
+1. `/api/media/healthcheck` to run a basic health check on the app
+2. `/api/media/fix` to fix the date for a single file, based on the metadata
 
 
  # Approach
@@ -36,7 +36,7 @@ The very first and basic iteration of this program needs to start with the bare-
 PORT=Any number you like (e.g., 3000)
 LOG_LEVEL=Desired log level (e.g,'debug')
 ARCHIVE_ROOT=The parent folder that contains Takeout zip packages (e.g.,'/Volumes/External HDD Drive/Google Photos Takeout')
-TEST_IMAGE_PATH=Path to a test image (e.g.,'/Users/user/test/PXL_20201106_172909201.jpg')
+TEST_IMAGE_PATH=Path to a test image (e.g.,'/Users/user/test/IMG_0495.jpg')
 META_ARCHIVE_DIR=This is where the JSON metadata files will be placed and zipped (e.g., '/Volumes/External HDD/Google Photos Takeout/Junk')
 
 ```
@@ -50,5 +50,9 @@ npm run start
 ```
 5. This will spit out a healthcheck endpoing. Hit it with curl or PostMan to make sure the app came up properly, e.g.
 ```
-curl -v http://localhost:3000/api/archive/healthcheck  | python -m json.tool
+curl -v http://localhost:3000/api/media/healthcheck  | python -m json.tool
 ```
+6. (Optional) Run a POST to test out the date fix API. Make sure the file exists in ARCHIVE_ROOT
+```
+curl --header "Content-Type: application/json"   --request POST   --data '{"filePath":"/Users/user/test/IMG_0495.jpg"}'   http://localhost:3000/api/media/fix | python -m json.tool
+  ```

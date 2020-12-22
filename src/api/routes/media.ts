@@ -8,11 +8,11 @@ import { Logger } from 'winston';
 const route = Router();
 
 export default (app: Router) => {
-  app.use('/archive', route);
+  app.use('/media', route);
 
-  route.get('/media', (req: Request, res: Response) => {
-    return res.json({ user: "nobody" }).status(200);
-  });
+  // route.get('/media', (req: Request, res: Response) => {
+  //   return res.json({ user: "nobody" }).status(200);
+  // });
 
   route.get(
     '/healthcheck',
@@ -42,23 +42,47 @@ export default (app: Router) => {
     },//leaving in this trailing comma because I can
   );
 
-  route.get(
+  /**
+   * POST body takes in the full path as the filePath.
+   * e.g.,
+   * 
+   */
+  route.post(
     '/fix',
-    async (req: Request, res: Response, next) => {
+    async (req: Request, res: Response) => {
       const logger: Logger = Container.get('logger');
-      logger.debug('Fixing the media file...');
-
+      const { filePath } = req.body;
+      logger.debug('Fixing the media file: %s',filePath);
 
       const metadataService = Container.get(MetadataService);
-      await metadataService.fixDate(null)
+      await metadataService.fixDate(filePath)
         .then((metadataResponse) => {
-          logger.info('Response from Metadata Service: %o', metadataResponse)
+          //logger.info('Response from Metadata Service: %o', metadataResponse)
           res.send(metadataResponse);
         }, (e) => {
           logger.error('error while listing metadata: %o', e);
           res.status(503).send();
         });
-    },//leaving in this trailing comma because I can
+    },
+  );
+
+  route.post(
+    '/fix/exif',
+    async (req: Request, res: Response) => {
+      const logger: Logger = Container.get('logger');
+      const { filePath } = req.body;
+      logger.debug('Fixing the media file: %s',filePath);
+
+      const metadataService = Container.get(MetadataService);
+      await metadataService.fixDateWithExif(filePath)
+        .then((metadataResponse) => {
+          //logger.info('Response from Metadata Service: %o', metadataResponse)
+          res.send(metadataResponse);
+        }, (e) => {
+          logger.error('error while listing metadata: %o', e);
+          res.status(503).send();
+        });
+    },
   );
 
 };
