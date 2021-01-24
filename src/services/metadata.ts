@@ -1,12 +1,8 @@
 import { Service, Inject } from 'typedi';
-import config from '../config';
 import fs from 'fs';
-import {ExifParserFactory} from "ts-exif-parser";
-
-import exiftool from 'node-exiftool';
-import exiftoolBin from 'dist-exiftool';
-
-import { format, compareAsc } from 'date-fns';
+import { ExifParserFactory } from "ts-exif-parser";
+const { close, open, utimes } = require('fs');
+import { DateTime } from "luxon";
 
 
 //@TODO just "touch" the file with a forced timestamp: https://remarkablemark.org/blog/2017/12/17/touch-file-nodejs/
@@ -20,52 +16,93 @@ export default class MetadataService {
 
   }
 
-  public async healthCheck(healthcheck){
+  public async healthCheck(healthcheck) {
     healthcheck.metaDataServiceStatus = 'OK';
     return 'this is fine -_-';
   }
 
+  public async fixDate(filePath) {
 
-  public async listMetadata(filePath) {
+    const metadataPath = filePath + '.json';
+    this.logger.debug(`Reading metadata file ${metadataPath}`);
 
     // The original photo is taken at 2017:11:19 08:47:19
-    const originalFile =  fs.readFileSync(config.testImagePath);
-  //  const exifData = getExif(originalFile).Exif; //=> '2017:11:19 08:47:19'
+    const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+    //  const exifData = getExif(originalFile).Exif; //=> '2017:11:19 08:47:19'
 
-    this.logger.debug(`successfully read file ${config.testImagePath}`);
+    this.logger.debug('Metadata loaded:\n %o', metadata);
+    
+    const photoTakenTime = metadata.photoTakenTime;
+    this.logger.debug('photoTakenTime: %o', photoTakenTime);
 
+    /**
+     * TODO: Fix the date right here using fs.utimes (see fixDateWithExif)
+     */
+
+    return 'Done fixing date';
+
+  }
+
+
+
+  /**
+   * @deprecated
+   * @param filePath full file path
+   */
+  public async fixDateWithExif(filePath) {
+
+    this.logger.debug(`Reading original file ${filePath}`);
+
+    
+    const originalFile = fs.readFileSync(filePath);
+    //  const exifData = getExif(originalFile).Exif; //=> '2017:11:19 08:47:19'
+
+    
     const parser = ExifParserFactory.create(originalFile);
-    //parser.enableSimpleValues(false);
+    
+    
+    parser.enableSimpleValues(false);
     const exifData = parser.parse();
 
-    console.log(exifData['tags']);
+     /**
+     * 
+     * WARNING: this is hacky and risky, but seems to be the only way of exracting the timezone, 
+     * which unfortunately has the tag 'undefined'. Better than nothing (for now)
+     */
+    var timezoneOffset = exifData['tags']['undefined'];
+    this.logger.debug(`timezoneOffset: ${timezoneOffset}`);
+    if(!timezoneOffset) {
+      this.logger.warn('No timezone available. Defaulting to GMT-4');
+      timezoneOffset = '-04:00';
+    }
 
-    const date = exifData['tags']['DateTimeOriginal'];
-    this.logger.debug(`DateTimeOriginal: ${new Date(date*1000)}` );
-    this.logger.debug(`DateTimeOriginal: ${date}` );
-
-
+    // Date format: '2020:09:07 18:58:22'
+    const originalDateString = exifData['tags']['DateTimeOriginal'] + ' ' + timezoneOffset;
+    this.logger.debug(`originalDateString (offset appended): ${originalDateString}`);
+    const originalDateWithZone = DateTime.fromFormat(
+      originalDateString,
+      "yyyy:MM:dd HH:mm:ss ZZ"
+    );
     
-    //const DateTimeOriginal = format(new Date(exifData.tags.DateTimeOriginal*1000), 'yyyy:mm:dd HH:MM:SS');
-    //const CreateDate = format(new Date(exifData.tags.CreateDate*1000), 'yyyy:mm:dd HH:MM:SSXXX');
+    this.logger.debug('originalDateWithZone: %s',originalDateWithZone.toLocaleString(DateTime.DATETIME_FULL));
 
-    //console.log(DateTimeOriginal);
-    //console.log(CreateDate);
+    const touch = (path, callback) => {
+      utimes(path, originalDateWithZone.toJSDate(), originalDateWithZone.toJSDate(), err => {
+        if (err) {
+          return open(path, 'w', (err, fd) => {
+            err ? callback(err) : close(fd, callback);
+          });
+        }
+        callback();
+      });
+    };
 
+    touch(filePath, err => {
+      if (err) throw err;
+      console.log(`touch ${filePath}`);
+    });
 
-
-
-
-    
-
-    //const newFile = modifyExif(await readFile(config.archiveRootDir+'/example.jpg'), data => {
-      // 36867: tag ID of `DateTimeOriginal` tag
-    //  data.Exif['36867'] = '2018:06:15 12:00:00'
-  //  });
-
-  //  getExif(newFile).Exif; //=> '2018:06:15 12:00:00'
-
-    //this.logger.debug(`listing metadata for ${config.archiveRootDir}`);
+    return exifData;
 
   }
 }
